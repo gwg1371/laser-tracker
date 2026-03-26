@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#f7fafb"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="LazeTrack"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="icons/icon.svg"/>
+  <title>LazeTrack</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Public+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-variant":              "#e0e3e4",
+            "surface-tint":                 "#006970",
+            "primary":                      "#006067",
+            "surface-container-high":       "#e5e9ea",
+            "surface-bright":               "#f7fafb",
+            "error-container":              "#ffdad6",
+            "tertiary":                     "#00615a",
+            "on-surface-variant":           "#3e494a",
+            "error":                        "#ba1a1a",
+            "surface-container-lowest":     "#ffffff",
+            "on-tertiary-fixed-variant":    "#00504a",
+            "on-secondary-fixed":           "#001f29",
+            "on-surface":                   "#181c1d",
+            "on-secondary":                 "#ffffff",
+            "inverse-surface":              "#2d3132",
+            "on-tertiary":                  "#ffffff",
+            "on-error-container":           "#93000a",
+            "on-primary":                   "#ffffff",
+            "tertiary-fixed":               "#8ef4e9",
+            "secondary-container":          "#c4e5f3",
+            "on-background":                "#181c1d",
+            "primary-fixed-dim":            "#7ad5dd",
+            "surface-container":            "#ebeeef",
+            "outline-variant":              "#bdc9ca",
+            "outline":                      "#6e797a",
+            "on-primary-fixed-variant":     "#004f54",
+            "surface-container-low":        "#f1f4f5",
+            "tertiary-fixed-dim":           "#71d7cd",
+            "secondary-fixed-dim":          "#abcbda",
+            "on-error":                     "#ffffff",
+            "surface-container-highest":    "#e0e3e4",
+            "on-secondary-fixed-variant":   "#2c4b57",
+            "inverse-on-surface":           "#eef1f2",
+            "on-primary-fixed":             "#002022",
+            "surface-dim":                  "#d7dadb",
+            "tertiary-container":           "#007c74",
+            "background":                   "#f7fafb",
+            "primary-container":            "#007b83",
+            "on-tertiary-container":        "#bdfff6",
+            "secondary":                    "#44636f",
+            "on-tertiary-fixed":            "#00201d",
+            "on-secondary-container":       "#486774",
+            "surface":                      "#f7fafb",
+            "secondary-fixed":              "#c7e8f6",
+            "on-primary-container":         "#d0fbff",
+            "primary-fixed":                "#96f1fa",
+            "inverse-primary":              "#7ad5dd"
+          },
+          fontFamily: {
+            headline: ["Manrope"],
+            body:     ["Public Sans"],
+            label:    ["Public Sans"]
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg:      "0.5rem",
+            xl:      "0.75rem",
+            full:    "9999px"
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Material Icons */
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    /* Gradient utility used throughout */
+    .pill-gradient {
+      background: linear-gradient(135deg, #006067 0%, #007b83 100%);
+    }
+
+    /* Glassmorphism for header + nav */
+    .glass-header {
+      background: rgba(247, 250, 251, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    body {
+      background-color: #f7fafb;
+      color: #181c1d;
+      font-family: 'Public Sans', sans-serif;
+      min-height: max(844px, 100dvh);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Custom range slider thumb */
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #006067;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,96,103,0.35);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #006067;
+      cursor: pointer;
+      border: none;
+    }
+    input[type="range"]::-webkit-slider-runnable-track { border-radius: 9999px; }
+
+    /* Remove tap highlight on mobile */
+    * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+    /* Safe area bottom padding for iPhone notch */
+    .pb-safe { padding-bottom: max(0px, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+
+<body class="bg-background text-on-background pb-24">
+
+  <!-- ── Fixed Glass Header ──────────────────────────────── -->
+  <header class="fixed top-0 w-full z-50 glass-header shadow-[0_12px_32px_0_rgba(24,28,29,0.06)]">
+    <div class="flex items-center justify-between px-6 h-16 max-w-2xl mx-auto w-full">
+
+      <!-- Avatar / Logo mark -->
+      <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden cursor-pointer"
+           onclick="App.navigate('settings')">
+        <span class="material-symbols-outlined text-primary"
+              style="font-size:18px; font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 20">
+          spa
+        </span>
+      </div>
+
+      <!-- App name -->
+      <h1 class="font-headline font-extrabold text-primary text-xl tracking-tighter">LazeTrack</h1>
+
+      <!-- Notification / settings bell -->
+      <button onclick="App.navigate('settings')"
+              class="text-primary hover:opacity-80 transition-opacity active:scale-95 duration-200">
+        <span class="material-symbols-outlined">notifications</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Main View Container ─────────────────────────────── -->
+  <main id="view-container" class="pt-16 px-6 max-w-2xl mx-auto">
+    <!-- Loading splash — replaced immediately by JS -->
+    <div class="flex items-center justify-center" style="height:calc(100dvh - 64px - 80px)">
+      <div class="text-center">
+        <div class="w-14 h-14 rounded-full pill-gradient mx-auto mb-4 flex items-center justify-center
+                    shadow-[0_12px_32px_0_rgba(0,96,103,0.3)]">
+          <span class="material-symbols-outlined text-white text-2xl"
+                style="font-variation-settings:'FILL' 1">spa</span>
+        </div>
+        <p class="font-headline font-bold text-primary tracking-tight">LazeTrack</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- ── Floating Action Button ─────────────────────────── -->
+  <button id="fab"
+    class="fixed right-6 bottom-24 z-50 pill-gradient text-white w-14 h-14 rounded-full
+           items-center justify-center shadow-[0_12px_32px_0_rgba(0,96,103,0.3)]
+           active:scale-90 transition-transform"
+    style="display:none">
+    <span class="material-symbols-outlined"
+          style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">add</span>
+  </button>
+
+  <!-- ── Bottom Navigation ──────────────────────────────── -->
+  <nav id="bottom-nav"
+    class="fixed bottom-0 left-0 w-full h-20 glass-header flex justify-around items-center
+           px-4 pb-safe z-50 rounded-t-[1.5rem] shadow-[0_-8px_24px_0_rgba(24,28,29,0.04)]">
+
+    <button id="nav-home" onclick="App.navigate('home')"
+      class="flex flex-col items-center justify-center bg-[#007b83]/10 text-[#006067] rounded-full px-4 py-1 active:scale-90 duration-200">
+      <span class="material-symbols-outlined"
+            style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">home_health</span>
+      <span class="font-label text-[10px] font-medium uppercase tracking-widest mt-0.5">Home</span>
+    </button>
+
+    <button id="nav-gallery" onclick="App.navigate('gallery')"
+      class="flex flex-col items-center justify-center text-slate-400 hover:text-[#006067] transition-colors active:scale-90 duration-200">
+      <span class="material-symbols-outlined">photo_library</span>
+      <span class="font-label text-[10px] font-medium uppercase tracking-widest mt-0.5">Gallery</span>
+    </button>
+
+    <button id="nav-log" onclick="App.navigate('log')"
+      class="flex flex-col items-center justify-center text-slate-400 hover:text-[#006067] transition-colors active:scale-90 duration-200">
+      <span class="material-symbols-outlined">add_circle</span>
+      <span class="font-label text-[10px] font-medium uppercase tracking-widest mt-0.5">Log</span>
+    </button>
+
+    <button id="nav-settings" onclick="App.navigate('settings')"
+      class="flex flex-col items-center justify-center text-slate-400 hover:text-[#006067] transition-colors active:scale-90 duration-200">
+      <span class="material-symbols-outlined">settings</span>
+      <span class="font-label text-[10px] font-medium uppercase tracking-widest mt-0.5">Settings</span>
+    </button>
+  </nav>
+
+  <!-- ── Scripts (load order matters) ───────────────────── -->
+  <script src="js/store.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/calendar.js"></script>
+  <script src="js/views/dashboard.js"></script>
+  <script src="js/views/area-detail.js"></script>
+  <script src="js/views/log-session.js"></script>
+  <script src="js/views/history.js"></script>
+  <script src="js/views/gallery.js"></script>
+  <script src="js/views/settings.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
