@@ -8,8 +8,8 @@ const Store = (() => {
   };
 
   const DEFAULT_AREAS = [
-    { id: 'area_chest', name: 'Chest', intervalDays: 28, totalSessions: 10, maxIntensity: 5, active: true, icon: 'texture' },
-    { id: 'area_belly', name: 'Belly', intervalDays: 28, totalSessions: 10, maxIntensity: 5, active: true, icon: 'accessibility_new' }
+    { id: 'area_chest', name: 'Chest', intervalDays: 7, totalSessions: 10, maxIntensity: 5, active: true, icon: 'texture' },
+    { id: 'area_belly', name: 'Belly', intervalDays: 7, totalSessions: 10, maxIntensity: 5, active: true, icon: 'accessibility_new' }
   ];
 
   const DEFAULT_SETTINGS = { userName: 'You', theme: 'light' };

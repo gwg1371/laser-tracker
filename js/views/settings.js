@@ -42,7 +42,7 @@ const SettingsView = (() => {
               <div class="grid grid-cols-3 gap-3">
                 <div>
                   <label class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold block mb-1">Interval (days)</label>
-                  <input type="number" id="interval-${area.id}" value="${area.intervalDays}" min="7" max="90"
+                  <input type="number" id="interval-${area.id}" value="${area.intervalDays}" min="1" max="90"
                     class="w-full p-2.5 bg-surface-container-high rounded-lg font-body text-on-surface text-sm border-0 focus:outline-none focus:bg-surface-variant transition-colors">
                 </div>
                 <div>
@@ -61,6 +61,30 @@ const SettingsView = (() => {
                 Save ${_esc(area.name)} settings
               </button>
             </div>`).join('')}
+        </div>
+
+        <!-- Google Calendar Sync -->
+        <div class="bg-surface-container-lowest rounded-[1.5rem] p-6 shadow-[0_8px_24px_0_rgba(24,28,29,0.04)] space-y-4">
+          <h2 class="font-headline font-bold text-lg text-on-surface flex items-center gap-2">
+            <svg width="20" height="20" viewBox="0 0 48 48" fill="none" class="flex-shrink-0">
+              <rect width="48" height="48" rx="8" fill="#fff"/>
+              <path d="M34 6h-2V2h-4v4H20V2h-4v4h-2a4 4 0 00-4 4v28a4 4 0 004 4h20a4 4 0 004-4V10a4 4 0 00-4-4zm0 32H14V18h20v20z" fill="#006067"/>
+              <text x="24" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="#006067" font-family="sans-serif">G</text>
+            </svg>
+            Google Calendar Sync
+          </h2>
+          <p class="text-xs text-on-surface-variant font-body leading-relaxed">
+            Download a <strong>.ics</strong> file with all your upcoming scheduled sessions.
+            Open it to import directly into Google Calendar (or any calendar app).
+          </p>
+          <button onclick="SettingsView.syncCalendar()"
+            class="w-full bg-surface-container-high text-on-surface py-4 rounded-full font-headline font-bold text-sm active:scale-95 transition-transform flex items-center justify-center gap-3">
+            <span class="material-symbols-outlined text-primary text-base">event_available</span>
+            Download Calendar File (.ics)
+          </button>
+          <p class="text-[10px] text-outline font-body text-center">
+            Tip: In Google Calendar → Other calendars → Import
+          </p>
         </div>
 
         <!-- Data Management -->
@@ -119,6 +143,10 @@ const SettingsView = (() => {
     showToast(`${area.name} settings saved!`);
   }
 
+  function syncCalendar() {
+    Calendar.downloadIcs(Store.getAreas().filter(a => a.active));
+  }
+
   function exportData() {
     const blob = new Blob([JSON.stringify({
       areas:      Store.getAreas(),
@@ -147,5 +175,5 @@ const SettingsView = (() => {
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  return { render, saveName, saveArea, exportData, clearData };
+  return { render, saveName, saveArea, syncCalendar, exportData, clearData };
 })();
