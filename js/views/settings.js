@@ -202,7 +202,8 @@ const SettingsView = (() => {
             <li>Go to <strong>console.cloud.google.com</strong></li>
             <li>Create a project → Enable <strong>Google Calendar API</strong></li>
             <li>Credentials → Create OAuth 2.0 Client ID → Web application</li>
-            <li>Add <strong>${_esc(window.location.origin + '/')}</strong> as Authorized JavaScript origin and redirect URI</li>
+            <li>Authorized JavaScript origins: <strong>${_esc(window.location.origin)}</strong></li>
+            <li>Authorized redirect URIs: <strong>${_esc(window.location.origin + window.location.pathname.replace(/\/$/, '') + '/')}</strong></li>
             <li>Copy the Client ID and paste it above</li>
           </ol>
         </details>
