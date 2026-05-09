@@ -168,24 +168,15 @@ const SettingsView = (() => {
         </div>`;
     }
 
-    // Not connected — show Client ID input
-    const savedId = _esc(GoogleSync.getClientId());
+    // Not connected
     return `
       <div class="bg-surface-container-lowest rounded-[1.5rem] p-6 shadow-[0_8px_24px_0_rgba(24,28,29,0.04)] space-y-4">
         <h2 class="font-headline font-bold text-lg text-on-surface flex items-center gap-2">
           ${calIcon} Google Calendar Sync
         </h2>
         <p class="text-xs text-on-surface-variant font-body leading-relaxed">
-          Connect your Google Calendar to automatically sync <strong>IPL</strong> events and get notifications before each session.
+          Connect your Google Calendar to automatically sync <strong>IPL</strong> events and get notified before each session.
         </p>
-
-        <div class="space-y-2">
-          <label class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold block">Google OAuth Client ID</label>
-          <input type="text" id="gcal-client-id"
-            value="${savedId}"
-            placeholder="xxxx.apps.googleusercontent.com"
-            class="w-full p-4 bg-surface-container-low rounded-xl font-body text-on-surface text-sm border-0 focus:outline-none focus:bg-surface-container-high transition-colors placeholder:text-outline-variant">
-        </div>
 
         <button onclick="SettingsView.gcalConnect()"
           class="w-full pill-gradient text-white py-4 rounded-full font-headline font-bold text-sm active:scale-95 transition-transform flex items-center justify-center gap-3">
@@ -195,18 +186,6 @@ const SettingsView = (() => {
           </svg>
           Connect Google Calendar
         </button>
-
-        <details class="text-xs text-on-surface-variant font-body">
-          <summary class="cursor-pointer text-primary font-semibold">How to get a Client ID?</summary>
-          <ol class="mt-2 space-y-1 pl-4 list-decimal leading-relaxed">
-            <li>Go to <strong>console.cloud.google.com</strong></li>
-            <li>Create a project → Enable <strong>Google Calendar API</strong></li>
-            <li>Credentials → Create OAuth 2.0 Client ID → Web application</li>
-            <li>Authorized JavaScript origins: <strong>${_esc(window.location.origin)}</strong></li>
-            <li>Authorized redirect URIs: <strong>${_esc(window.location.origin + window.location.pathname.replace(/\/$/, '') + '/')}</strong></li>
-            <li>Copy the Client ID and paste it above</li>
-          </ol>
-        </details>
       </div>`;
   }
 
@@ -230,8 +209,7 @@ const SettingsView = (() => {
   }
 
   function gcalConnect() {
-    const id = document.getElementById('gcal-client-id').value;
-    GoogleSync.connect(id);
+    GoogleSync.connect(GoogleSync.getClientId());
   }
 
   function gcalDisconnect() {

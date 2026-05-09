@@ -1,6 +1,7 @@
 // google-sync.js — Google Calendar OAuth2 + IPL event sync + notifications
 const GoogleSync = (() => {
 
+  const DEFAULT_CLIENT_ID = '472468769178-4n5c4qeejrs6c2k01aa1stam0v14lvc0.apps.googleusercontent.com';
   const SCOPES      = 'https://www.googleapis.com/auth/calendar.readonly';
   const AUTH_URL    = 'https://accounts.google.com/o/oauth2/v2/auth';
   const CALENDAR_API = 'https://www.googleapis.com/calendar/v3';
@@ -22,7 +23,7 @@ const GoogleSync = (() => {
 
   function isConnected() { return !!_getToken(); }
 
-  function getClientId() { return Store.getGCal().clientId || ''; }
+  function getClientId() { return Store.getGCal().clientId || DEFAULT_CLIENT_ID; }
 
   // ── OAuth2 implicit flow ───────────────────────────────
 
