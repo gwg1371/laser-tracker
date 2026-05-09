@@ -6,7 +6,8 @@ const Store = (() => {
     SETTINGS:   'lht_settings',
     REGROWTH:   'lht_regrowth',
     IPL_EVENTS: 'lht_ipl_events',
-    GCAL:       'lht_gcal'
+    GCAL:       'lht_gcal',
+    PHOTOS:     'lht_photos'
   };
 
   const DEFAULT_AREAS = [
@@ -105,6 +106,13 @@ const Store = (() => {
     return entries[0] || null;
   }
 
+  // ── Photos ────────────────────────────────────────────
+  function getPhotos()               { return _get(KEYS.PHOTOS) || []; }
+  function getPhotosForArea(areaId)  { return getPhotos().filter(p => p.areaId === areaId).sort((a,b) => new Date(a.date) - new Date(b.date)); }
+  function getPhotosForSession(sid)  { return getPhotos().filter(p => p.sessionId === sid); }
+  function savePhoto(photo)          { const arr = getPhotos(); arr.push(photo); _set(KEYS.PHOTOS, arr); return photo; }
+  function deletePhoto(id)           { _set(KEYS.PHOTOS, getPhotos().filter(p => p.id !== id)); }
+
   // ── Google Calendar ────────────────────────────────────
   function getGCal()       { return _get(KEYS.GCAL)       || {}; }
   function saveGCal(data)  { _set(KEYS.GCAL, { ...getGCal(), ...data }); }
@@ -120,6 +128,7 @@ const Store = (() => {
     getSessions, getSessionsForArea, getLastSession, saveSession, deleteSession,
     getSettings, saveSettings,
     getRegrowth, saveRegrowthEntry, getLastRegrowth,
+    getPhotos, getPhotosForArea, getPhotosForSession, savePhoto, deletePhoto,
     getGCal, saveGCal, getIPLEvents, saveIPLEvents
   };
 })();

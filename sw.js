@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lazetrack-v2';
+const CACHE_NAME = 'lazetrack-v3';
 const ASSETS = [
   './',
   './index.html',

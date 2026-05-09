@@ -105,6 +105,27 @@ const LogSessionView = (() => {
               class="w-full p-4 bg-surface-container-low rounded-xl font-body text-on-surface border-0 focus:outline-none focus:bg-surface-container-high transition-colors resize-none placeholder:text-outline-variant"></textarea>
           </div>
 
+          <!-- Photo -->
+          <div class="space-y-3">
+            <label class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold block">
+              Photo <span class="text-outline normal-case tracking-normal font-normal">— optional</span>
+            </label>
+            <div id="photo-preview" class="hidden relative">
+              <img id="photo-img" class="w-full rounded-2xl object-cover max-h-56 bg-surface-container-low">
+              <button type="button" onclick="LogSessionView.removePhoto()"
+                class="absolute top-2 right-2 w-8 h-8 rounded-full bg-inverse-surface/70 text-inverse-on-surface flex items-center justify-center active:scale-90">
+                <span class="material-symbols-outlined text-base">close</span>
+              </button>
+            </div>
+            <label for="photo-input"
+              class="flex items-center gap-3 p-4 bg-surface-container-low rounded-xl cursor-pointer hover:bg-surface-container-high transition-colors active:scale-[.99]">
+              <span class="material-symbols-outlined text-primary">add_photo_alternate</span>
+              <span class="font-body text-on-surface-variant text-sm" id="photo-label">Take or choose a photo</span>
+            </label>
+            <input type="file" id="photo-input" accept="image/*" capture="environment"
+              class="hidden" onchange="LogSessionView.handlePhoto(this)">
+          </div>
+
           <button type="submit"
             class="w-full pill-gradient text-white py-4 rounded-full font-headline font-bold text-base shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
             <span class="material-symbols-outlined">save</span>
@@ -141,7 +162,26 @@ const LogSessionView = (() => {
     });
   }
 
-  function submit(e) {
+  let _pendingPhotoDataUrl = null;
+
+  async function handlePhoto(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const dataUrl = await Utils.compressImage(file);
+    _pendingPhotoDataUrl = dataUrl;
+    document.getElementById('photo-img').src = dataUrl;
+    document.getElementById('photo-preview').classList.remove('hidden');
+    document.getElementById('photo-label').textContent = 'Photo selected — tap to change';
+  }
+
+  function removePhoto() {
+    _pendingPhotoDataUrl = null;
+    document.getElementById('photo-preview').classList.add('hidden');
+    document.getElementById('photo-label').textContent = 'Take or choose a photo';
+    document.getElementById('photo-input').value = '';
+  }
+
+  async function submit(e) {
     e.preventDefault();
     const areaId = document.getElementById('area-id').value;
     if (!areaId) { showToast('Please select an area.'); return; }
@@ -159,6 +199,18 @@ const LogSessionView = (() => {
     };
 
     Store.saveSession(session);
+
+    if (_pendingPhotoDataUrl) {
+      Store.savePhoto({
+        id:        Utils.generateId('photo'),
+        sessionId: session.id,
+        areaId:    session.areaId,
+        date:      session.date,
+        dataUrl:   _pendingPhotoDataUrl
+      });
+      _pendingPhotoDataUrl = null;
+    }
+
     _renderSuccess(session);
   }
 
@@ -240,5 +292,5 @@ const LogSessionView = (() => {
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  return { render, selectArea, selectPasses, selectPain, submit, addToCalendar };
+  return { render, selectArea, selectPasses, selectPain, submit, handlePhoto, removePhoto, addToCalendar };
 })();
