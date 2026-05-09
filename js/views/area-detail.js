@@ -114,6 +114,9 @@ const AreaDetailView = (() => {
                 </div>
               </div>
             </div>
+
+            ${_intensityChart(sessions)}
+            ${_regrowthChart(areaId)}
           </aside>
         </div>
       </div>
@@ -173,6 +176,89 @@ const AreaDetailView = (() => {
         <div class="text-right">
           <div class="font-headline font-bold text-primary">Intensity ${session.intensityLevel}</div>
           <div class="text-[10px] text-on-surface-variant uppercase tracking-widest">${tag}</div>
+        </div>
+      </div>`;
+  }
+
+  function _intensityChart(sessions) {
+    if (sessions.length < 2) return '';
+    const pts = sessions.slice().reverse(); // oldest first
+    const W = 260, H = 80, PAD = 8;
+    const maxI = 9;
+    const xStep = (W - PAD * 2) / (pts.length - 1);
+    const yScale = v => PAD + (H - PAD * 2) * (1 - v / maxI);
+
+    const points = pts.map((s, i) => `${PAD + i * xStep},${yScale(s.intensityLevel)}`).join(' ');
+    const area   = pts.map((s, i) => `${PAD + i * xStep},${yScale(s.intensityLevel)}`).join(' ')
+      + ` ${PAD + (pts.length - 1) * xStep},${H} ${PAD},${H}`;
+
+    return `
+      <div class="bg-surface-container-lowest p-5 rounded-[1.5rem] shadow-[0_8px_24px_0_rgba(24,28,29,0.04)]">
+        <h3 class="font-headline font-bold text-sm text-on-surface mb-3 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-base">bolt</span>
+          Intensity Over Time
+        </h3>
+        <svg viewBox="0 0 ${W} ${H}" class="w-full" style="height:${H}px">
+          <defs>
+            <linearGradient id="ig" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#006067" stop-opacity="0.18"/>
+              <stop offset="100%" stop-color="#006067" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <polygon points="${area}" fill="url(#ig)"/>
+          <polyline points="${points}" fill="none" stroke="#006067" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+          ${pts.map((s, i) => `<circle cx="${PAD + i * xStep}" cy="${yScale(s.intensityLevel)}" r="3" fill="#006067"/>`).join('')}
+        </svg>
+        <div class="flex justify-between text-[9px] text-on-surface-variant font-body mt-1">
+          <span>${Utils.formatDateShort(pts[0].date)}</span>
+          <span>Level 1–9</span>
+          <span>${Utils.formatDateShort(pts[pts.length - 1].date)}</span>
+        </div>
+      </div>`;
+  }
+
+  function _regrowthChart(areaId) {
+    const entries = Store.getRegrowth()
+      .filter(r => r.areaId === areaId)
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+    if (entries.length < 2) return '';
+
+    const W = 260, H = 80, PAD = 8;
+    const xStep  = (W - PAD * 2) / (entries.length - 1);
+    const yScale = v => PAD + (H - PAD * 2) * (1 - v / 10);
+
+    const points = entries.map((r, i) => `${PAD + i * xStep},${yScale(r.level)}`).join(' ');
+    const area   = entries.map((r, i) => `${PAD + i * xStep},${yScale(r.level)}`).join(' ')
+      + ` ${PAD + (entries.length - 1) * xStep},${H} ${PAD},${H}`;
+
+    const trend = entries[entries.length - 1].level - entries[0].level;
+    const trendLabel = trend < 0 ? `↓ ${Math.abs(trend)} pts — improving` : trend > 0 ? `↑ ${trend} pts — increasing` : 'Stable';
+    const trendColor = trend < 0 ? 'text-tertiary' : trend > 0 ? 'text-error' : 'text-on-surface-variant';
+
+    return `
+      <div class="bg-surface-container-lowest p-5 rounded-[1.5rem] shadow-[0_8px_24px_0_rgba(24,28,29,0.04)]">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-headline font-bold text-sm text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-tertiary text-base">grass</span>
+            Regrowth Trend
+          </h3>
+          <span class="text-[10px] font-bold ${trendColor}">${trendLabel}</span>
+        </div>
+        <svg viewBox="0 0 ${W} ${H}" class="w-full" style="height:${H}px">
+          <defs>
+            <linearGradient id="rg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#00615a" stop-opacity="0.18"/>
+              <stop offset="100%" stop-color="#00615a" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <polygon points="${area}" fill="url(#rg)"/>
+          <polyline points="${points}" fill="none" stroke="#00615a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="5,3"/>
+          ${entries.map((r, i) => `<circle cx="${PAD + i * xStep}" cy="${yScale(r.level)}" r="3" fill="#00615a"/>`).join('')}
+        </svg>
+        <div class="flex justify-between text-[9px] text-on-surface-variant font-body mt-1">
+          <span>${Utils.formatDateShort(entries[0].date)}</span>
+          <span>Level 0–10</span>
+          <span>${Utils.formatDateShort(entries[entries.length - 1].date)}</span>
         </div>
       </div>`;
   }

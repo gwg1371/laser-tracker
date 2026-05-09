@@ -51,35 +51,40 @@ const HistoryView = (() => {
     const idx         = sessArr.findIndex(s => s.id === session.id);
     const num         = sessArr.length - idx;
     const painEmojis  = ['','😊','🙂','😐','😬','😣'];
+    const photos      = Store.getPhotosForSession(session.id);
 
     const tags = [
-      session.passCount       ? `${session.passCount} passes`       : null,
-      session.durationMinutes ? `${session.durationMinutes} min`     : null,
-      session.painRating      ? painEmojis[session.painRating]        : null
+      session.passCount       ? `${session.passCount} passes`   : null,
+      session.durationMinutes ? `${session.durationMinutes} min` : null,
+      session.painRating      ? painEmojis[session.painRating]   : null
     ].filter(Boolean);
 
     return `
       <div onclick="App.navigate('area/${session.areaId}')"
-        class="bg-surface-container-lowest rounded-[1.5rem] p-5 shadow-[0_4px_12px_rgba(0,0,0,0.02)] cursor-pointer hover:bg-surface-container-low transition-colors">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <span class="material-symbols-outlined text-primary">bolt</span>
+        class="bg-surface-container-lowest rounded-[1.5rem] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.02)] cursor-pointer hover:bg-surface-container-low transition-colors">
+        ${photos.length > 0 ? `
+          <img src="${photos[0].dataUrl}" class="w-full h-32 object-cover">` : ''}
+        <div class="p-5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-primary">bolt</span>
+              </div>
+              <div>
+                <div class="font-headline font-bold text-on-surface">${_esc(areaName)} — Session ${num}</div>
+                <div class="text-xs text-on-surface-variant">${Utils.formatDate(session.date)}</div>
+              </div>
             </div>
-            <div>
-              <div class="font-headline font-bold text-on-surface">${_esc(areaName)} — Session ${num}</div>
-              <div class="text-xs text-on-surface-variant">${Utils.formatDate(session.date)}</div>
+            <div class="text-right">
+              <div class="font-headline font-bold text-primary">Lvl ${session.intensityLevel}</div>
             </div>
           </div>
-          <div class="text-right">
-            <div class="font-headline font-bold text-primary">Lvl ${session.intensityLevel}</div>
-          </div>
+          ${tags.length || session.notes ? `
+            <div class="mt-3 flex flex-wrap gap-2 items-center">
+              ${tags.map(t => `<span class="text-[10px] uppercase tracking-widest bg-surface-container-low text-on-surface-variant px-2 py-1 rounded-lg font-bold">${t}</span>`).join('')}
+              ${session.notes ? `<p class="text-sm text-on-surface-variant font-body w-full mt-1">${_esc(session.notes)}</p>` : ''}
+            </div>` : ''}
         </div>
-        ${tags.length || session.notes ? `
-          <div class="mt-3 flex flex-wrap gap-2 items-center">
-            ${tags.map(t => `<span class="text-[10px] uppercase tracking-widest bg-surface-container-low text-on-surface-variant px-2 py-1 rounded-lg font-bold">${t}</span>`).join('')}
-            ${session.notes ? `<p class="text-sm text-on-surface-variant font-body w-full mt-1">${_esc(session.notes)}</p>` : ''}
-          </div>` : ''}
       </div>`;
   }
 
