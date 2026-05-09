@@ -65,10 +65,11 @@ const App = (() => {
   }
 
   function init() {
-    // Service worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
+
+    GoogleSync.init(); // handles OAuth callback + reschedules notifications
 
     window.addEventListener('hashchange', router);
     document.getElementById('fab').addEventListener('click', () => navigate('log'));
