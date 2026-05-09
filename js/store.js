@@ -1,15 +1,17 @@
 // store.js — All localStorage data access for LazeTrack
 const Store = (() => {
   const KEYS = {
-    AREAS: 'lht_areas',
-    SESSIONS: 'lht_sessions',
-    SETTINGS: 'lht_settings',
-    REGROWTH: 'lht_regrowth'
+    AREAS:      'lht_areas',
+    SESSIONS:   'lht_sessions',
+    SETTINGS:   'lht_settings',
+    REGROWTH:   'lht_regrowth',
+    IPL_EVENTS: 'lht_ipl_events',
+    GCAL:       'lht_gcal'
   };
 
   const DEFAULT_AREAS = [
-    { id: 'area_chest', name: 'Chest', intervalDays: 7, totalSessions: 10, maxIntensity: 5, active: true, icon: 'texture' },
-    { id: 'area_belly', name: 'Belly', intervalDays: 7, totalSessions: 10, maxIntensity: 5, active: true, icon: 'accessibility_new' }
+    { id: 'area_belly', name: 'Belly', intervalDays: 7, totalSessions: 10, maxIntensity: 5, active: true, icon: 'accessibility_new' },
+    { id: 'area_chest', name: 'Chest', intervalDays: 7, totalSessions: 10, maxIntensity: 5, active: true, icon: 'texture' }
   ];
 
   const DEFAULT_SETTINGS = { userName: 'You', theme: 'light' };
@@ -20,6 +22,30 @@ const Store = (() => {
 
   function _set(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  // ── Migration ──────────────────────────────────────────
+  function _migrate() {
+    const saved = _get(KEYS.AREAS);
+    if (!saved) return;
+    let changed = false;
+    const migrated = saved.map(a => {
+      // Fix old 28-day default → 7 days
+      if (a.intervalDays === 28 && (a.id === 'area_belly' || a.id === 'area_chest')) {
+        changed = true;
+        return { ...a, intervalDays: 7 };
+      }
+      return a;
+    });
+    // Ensure Belly appears before Chest
+    const bellyIdx = migrated.findIndex(a => a.id === 'area_belly');
+    const chestIdx = migrated.findIndex(a => a.id === 'area_chest');
+    if (bellyIdx > 0 && chestIdx === 0) {
+      migrated.splice(bellyIdx, 1);
+      migrated.unshift(saved.find(a => a.id === 'area_belly') || migrated[0]);
+      changed = true;
+    }
+    if (changed) _set(KEYS.AREAS, migrated);
   }
 
   // ── Areas ──────────────────────────────────────────────
@@ -79,10 +105,21 @@ const Store = (() => {
     return entries[0] || null;
   }
 
+  // ── Google Calendar ────────────────────────────────────
+  function getGCal()       { return _get(KEYS.GCAL)       || {}; }
+  function saveGCal(data)  { _set(KEYS.GCAL, { ...getGCal(), ...data }); }
+
+  function getIPLEvents()  { return _get(KEYS.IPL_EVENTS) || []; }
+  function saveIPLEvents(events) { _set(KEYS.IPL_EVENTS, events); }
+
+  // Run migration on module load
+  _migrate();
+
   return {
     getAreas, getArea, saveArea,
     getSessions, getSessionsForArea, getLastSession, saveSession, deleteSession,
     getSettings, saveSettings,
-    getRegrowth, saveRegrowthEntry, getLastRegrowth
+    getRegrowth, saveRegrowthEntry, getLastRegrowth,
+    getGCal, saveGCal, getIPLEvents, saveIPLEvents
   };
 })();

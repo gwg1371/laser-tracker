@@ -64,28 +64,7 @@ const SettingsView = (() => {
         </div>
 
         <!-- Google Calendar Sync -->
-        <div class="bg-surface-container-lowest rounded-[1.5rem] p-6 shadow-[0_8px_24px_0_rgba(24,28,29,0.04)] space-y-4">
-          <h2 class="font-headline font-bold text-lg text-on-surface flex items-center gap-2">
-            <svg width="20" height="20" viewBox="0 0 48 48" fill="none" class="flex-shrink-0">
-              <rect width="48" height="48" rx="8" fill="#fff"/>
-              <path d="M34 6h-2V2h-4v4H20V2h-4v4h-2a4 4 0 00-4 4v28a4 4 0 004 4h20a4 4 0 004-4V10a4 4 0 00-4-4zm0 32H14V18h20v20z" fill="#006067"/>
-              <text x="24" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="#006067" font-family="sans-serif">G</text>
-            </svg>
-            Google Calendar Sync
-          </h2>
-          <p class="text-xs text-on-surface-variant font-body leading-relaxed">
-            Download a <strong>.ics</strong> file with all your upcoming scheduled sessions.
-            Open it to import directly into Google Calendar (or any calendar app).
-          </p>
-          <button onclick="SettingsView.syncCalendar()"
-            class="w-full bg-surface-container-high text-on-surface py-4 rounded-full font-headline font-bold text-sm active:scale-95 transition-transform flex items-center justify-center gap-3">
-            <span class="material-symbols-outlined text-primary text-base">event_available</span>
-            Download Calendar File (.ics)
-          </button>
-          <p class="text-[10px] text-outline font-body text-center">
-            Tip: In Google Calendar → Other calendars → Import
-          </p>
-        </div>
+        ${_gcalCard()}
 
         <!-- Data Management -->
         <div class="bg-surface-container-lowest rounded-[1.5rem] p-6 shadow-[0_8px_24px_0_rgba(24,28,29,0.04)] space-y-4">
@@ -124,6 +103,112 @@ const SettingsView = (() => {
     `;
   }
 
+  function _gcalCard() {
+    const connected = GoogleSync.isConnected();
+    const gcal      = Store.getGCal();
+    const events    = Store.getIPLEvents();
+    const lastSync  = gcal.lastSync
+      ? new Date(gcal.lastSync).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+      : null;
+
+    const calIcon = `<svg width="20" height="20" viewBox="0 0 48 48" fill="none" class="flex-shrink-0">
+      <rect width="48" height="48" rx="8" fill="#fff"/>
+      <path d="M34 6h-2V2h-4v4H20V2h-4v4h-2a4 4 0 00-4 4v28a4 4 0 004 4h20a4 4 0 004-4V10a4 4 0 00-4-4zm0 32H14V18h20v20z" fill="#006067"/>
+      <text x="24" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="#006067" font-family="sans-serif">G</text>
+    </svg>`;
+
+    if (connected) {
+      const eventRows = events.slice(0, 5).map(ev => {
+        const d    = new Date(ev.start);
+        const past = d < new Date();
+        const label = isNaN(d.getTime()) ? ev.start
+          : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        return `
+          <div class="flex items-center justify-between py-2 border-b border-surface-container-high last:border-0 ${past ? 'opacity-40' : ''}">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-primary text-base">flash_on</span>
+              <span class="font-body text-sm text-on-surface">${_esc(ev.title)}</span>
+            </div>
+            <span class="text-xs text-on-surface-variant font-body">${label}</span>
+          </div>`;
+      }).join('');
+
+      return `
+        <div class="bg-surface-container-lowest rounded-[1.5rem] p-6 shadow-[0_8px_24px_0_rgba(24,28,29,0.04)] space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="font-headline font-bold text-lg text-on-surface flex items-center gap-2">
+              ${calIcon} Google Calendar
+            </h2>
+            <span class="flex items-center gap-1.5 text-xs font-semibold text-tertiary">
+              <span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>Connected
+            </span>
+          </div>
+
+          ${events.length > 0 ? `
+            <div class="bg-surface-container-low rounded-xl p-4 space-y-1">
+              <p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-2">IPL Events (${events.length})</p>
+              ${eventRows}
+              ${events.length > 5 ? `<p class="text-xs text-outline text-center pt-1">+${events.length - 5} more</p>` : ''}
+            </div>` : `
+            <p class="text-xs text-on-surface-variant font-body">No upcoming IPL events found in your calendar.</p>`}
+
+          ${lastSync ? `<p class="text-[10px] text-outline font-body">Last synced: ${lastSync}</p>` : ''}
+
+          <div class="flex gap-3">
+            <button onclick="SettingsView.gcalSync()"
+              class="flex-1 pill-gradient text-white py-3.5 rounded-full font-headline font-bold text-sm active:scale-95 transition-transform flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-base">sync</span>
+              Sync Now
+            </button>
+            <button onclick="SettingsView.gcalDisconnect()"
+              class="px-5 py-3.5 bg-error-container text-on-error-container rounded-full font-headline font-bold text-sm active:scale-95 transition-transform">
+              Disconnect
+            </button>
+          </div>
+        </div>`;
+    }
+
+    // Not connected — show Client ID input
+    const savedId = _esc(GoogleSync.getClientId());
+    return `
+      <div class="bg-surface-container-lowest rounded-[1.5rem] p-6 shadow-[0_8px_24px_0_rgba(24,28,29,0.04)] space-y-4">
+        <h2 class="font-headline font-bold text-lg text-on-surface flex items-center gap-2">
+          ${calIcon} Google Calendar Sync
+        </h2>
+        <p class="text-xs text-on-surface-variant font-body leading-relaxed">
+          Connect your Google Calendar to automatically sync <strong>IPL</strong> events and get notifications before each session.
+        </p>
+
+        <div class="space-y-2">
+          <label class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold block">Google OAuth Client ID</label>
+          <input type="text" id="gcal-client-id"
+            value="${savedId}"
+            placeholder="xxxx.apps.googleusercontent.com"
+            class="w-full p-4 bg-surface-container-low rounded-xl font-body text-on-surface text-sm border-0 focus:outline-none focus:bg-surface-container-high transition-colors placeholder:text-outline-variant">
+        </div>
+
+        <button onclick="SettingsView.gcalConnect()"
+          class="w-full pill-gradient text-white py-4 rounded-full font-headline font-bold text-sm active:scale-95 transition-transform flex items-center justify-center gap-3">
+          <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
+            <rect width="48" height="48" rx="8" fill="rgba(255,255,255,0.2)"/>
+            <path d="M34 6h-2V2h-4v4H20V2h-4v4h-2a4 4 0 00-4 4v28a4 4 0 004 4h20a4 4 0 004-4V10a4 4 0 00-4-4zm0 32H14V18h20v20z" fill="white"/>
+          </svg>
+          Connect Google Calendar
+        </button>
+
+        <details class="text-xs text-on-surface-variant font-body">
+          <summary class="cursor-pointer text-primary font-semibold">How to get a Client ID?</summary>
+          <ol class="mt-2 space-y-1 pl-4 list-decimal leading-relaxed">
+            <li>Go to <strong>console.cloud.google.com</strong></li>
+            <li>Create a project → Enable <strong>Google Calendar API</strong></li>
+            <li>Credentials → Create OAuth 2.0 Client ID → Web application</li>
+            <li>Add <strong>${_esc(window.location.origin + '/')}</strong> as Authorized JavaScript origin and redirect URI</li>
+            <li>Copy the Client ID and paste it above</li>
+          </ol>
+        </details>
+      </div>`;
+  }
+
   function saveName() {
     const name = document.getElementById('user-name').value.trim();
     if (!name) { showToast('Please enter a name.'); return; }
@@ -141,6 +226,27 @@ const SettingsView = (() => {
     if (mv) area.maxIntensity   = parseInt(mv.value)  || area.maxIntensity;
     Store.saveArea(area);
     showToast(`${area.name} settings saved!`);
+  }
+
+  function gcalConnect() {
+    const id = document.getElementById('gcal-client-id').value;
+    GoogleSync.connect(id);
+  }
+
+  function gcalDisconnect() {
+    if (!confirm('Disconnect Google Calendar and remove synced IPL events?')) return;
+    GoogleSync.disconnect();
+    showToast('Disconnected from Google Calendar.');
+    render();
+  }
+
+  async function gcalSync() {
+    showToast('Syncing IPL events…');
+    const result = await GoogleSync.syncIPLEvents();
+    if (result !== false) {
+      showToast(`Synced ${result.length} IPL event${result.length !== 1 ? 's' : ''}.`);
+      render();
+    }
   }
 
   function syncCalendar() {
@@ -175,5 +281,5 @@ const SettingsView = (() => {
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  return { render, saveName, saveArea, syncCalendar, exportData, clearData };
+  return { render, saveName, saveArea, gcalConnect, gcalDisconnect, gcalSync, syncCalendar, exportData, clearData };
 })();

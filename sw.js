@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lazetrack-v1';
+const CACHE_NAME = 'lazetrack-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -6,6 +6,7 @@ const ASSETS = [
   './js/store.js',
   './js/utils.js',
   './js/calendar.js',
+  './js/google-sync.js',
   './js/views/dashboard.js',
   './js/views/area-detail.js',
   './js/views/log-session.js',
